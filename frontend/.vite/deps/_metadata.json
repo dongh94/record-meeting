@@ -1,0 +1,46 @@
+{
+  "hash": "9e5be42d",
+  "configHash": "93709138",
+  "lockfileHash": "bceac195",
+  "browserHash": "584c5f62",
+  "optimized": {
+    "react": {
+      "src": "../../node_modules/.pnpm/react@19.1.1/node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "982ea815",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/.pnpm/react-dom@19.1.1_react@19.1.1/node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "53af0227",
+      "needsInterop": true
+    },
+    "@emotion/react": {
+      "src": "../../node_modules/.pnpm/@emotion+react@11.14.0_@types+react@19.1.13_react@19.1.1/node_modules/@emotion/react/dist/emotion-react.browser.development.esm.js",
+      "file": "@emotion_react.js",
+      "fileHash": "b4c590cf",
+      "needsInterop": false
+    },
+    "@emotion/styled": {
+      "src": "../../node_modules/.pnpm/@emotion+styled@11.14.1_@emotion+react@11.14.0_@types+react@19.1.13_react@19.1.1__@types+react@19.1.13_react@19.1.1/node_modules/@emotion/styled/dist/emotion-styled.browser.development.esm.js",
+      "file": "@emotion_styled.js",
+      "fileHash": "37fa919e",
+      "needsInterop": false
+    },
+    "lucide-react": {
+      "src": "../../node_modules/.pnpm/lucide-react@0.544.0_react@19.1.1/node_modules/lucide-react/dist/esm/lucide-react.js",
+      "file": "lucide-react.js",
+      "fileHash": "46f16c83",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-XWCN5NXH": {
+      "file": "chunk-XWCN5NXH.js"
+    },
+    "chunk-SIAFITXM": {
+      "file": "chunk-SIAFITXM.js"
+    }
+  }
+}
