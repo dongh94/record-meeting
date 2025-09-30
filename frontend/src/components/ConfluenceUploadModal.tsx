@@ -311,10 +311,18 @@ const ConfluenceUploadModal: React.FC<ConfluenceUploadModalProps> = ({
   const [isSpaceDropdownOpen, setIsSpaceDropdownOpen] =
     useState<boolean>(false);
 
-  // 모달이 열릴 때 스페이스 목록 로드 (부수 효과 - API 호출)
+  // 모달이 열릴 때 스페이스 목록 로드 및 상태 초기화
   useEffect(() => {
-    if (isOpen && confluence.spaces.length === 0) {
-      confluence.loadSpaces();
+    if (isOpen) {
+      // 스페이스 목록이 없으면 로드
+      if (confluence.spaces.length === 0) {
+        confluence.loadSpaces();
+      }
+      // 모달이 열릴 때마다 페이지 목록과 선택 상태 초기화
+      confluence.clearPages();
+      setSelectedSpaceKey("");
+      setSelectedParentId("");
+      setSpaceSearchTerm("");
     }
   }, [isOpen]);
 
@@ -365,26 +373,16 @@ const ConfluenceUploadModal: React.FC<ConfluenceUploadModalProps> = ({
     setSpaceSearchTerm(value);
     setIsSpaceDropdownOpen(true);
 
-    // 검색어가 정확히 일치하는 스페이스가 있으면 자동 선택
-    const exactMatch = confluence.spaces.find(
-      (space) =>
-        space.name.toLowerCase() === value.toLowerCase() ||
-        space.key.toLowerCase() === value.toLowerCase()
-    );
-
-    if (exactMatch && exactMatch.key !== selectedSpaceKey) {
-      // 새로운 스페이스가 선택된 경우에만 API 호출
-      setSelectedSpaceKey(exactMatch.key);
-      confluence.loadPages(exactMatch.key);
-      setSelectedParentId("");
-    } else if (
+    // 현재 선택된 스페이스와 검색어가 맞지 않으면 선택 해제
+    if (
       selectedSpaceKey &&
       selectedSpace &&
-      !selectedSpace.name.toLowerCase().includes(value.toLowerCase())
+      !selectedSpace.name.toLowerCase().includes(value.toLowerCase()) &&
+      !selectedSpace.key.toLowerCase().includes(value.toLowerCase())
     ) {
-      // 현재 선택된 스페이스와 검색어가 맞지 않으면 선택 해제
       setSelectedSpaceKey("");
       setSelectedParentId("");
+      confluence.clearPages(); // 페이지 목록 클리어
     }
   };
 

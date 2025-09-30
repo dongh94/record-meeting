@@ -3,7 +3,7 @@ import { TranscriptionService } from "../services/transcriptionService";
 import { upload, handleUploadError } from "../middleware/upload";
 import { TranscriptionResponse } from "../types";
 
-const router = Router();
+const router: Router = Router();
 const transcriptionService = new TranscriptionService();
 
 /**

@@ -43,6 +43,7 @@ export interface UseConfluenceReturn {
   ) => Promise<ConfluenceUploadResult | null>;
   loadSpaces: (forceRefresh?: boolean) => Promise<void>;
   loadPages: (spaceKey: string, forceRefresh?: boolean) => Promise<void>;
+  clearPages: () => void;
   clearError: () => void;
 }
 
@@ -183,8 +184,8 @@ export const useConfluence = (): UseConfluenceReturn => {
         throw new Error(result.error || "스페이스 목록 조회에 실패했습니다.");
       }
 
-      console.log("✅ 스페이스 목록 로드 성공:", result.spaces.length, "개");
-      setSpaces(result.spaces);
+      console.log("✅ 스페이스 목록 로드 성공:", result.data.length, "개");
+      setSpaces(result.data);
     } catch (err) {
       console.error("❌ 스페이스 목록 로드 실패:", err);
 
@@ -240,8 +241,8 @@ export const useConfluence = (): UseConfluenceReturn => {
           throw new Error(result.error || "페이지 목록 조회에 실패했습니다.");
         }
 
-        console.log("✅ 페이지 목록 로드 성공:", result.pages.length, "개");
-        setPages(result.pages);
+        console.log("✅ 페이지 목록 로드 성공:", result.data.length, "개");
+        setPages(result.data);
       } catch (err) {
         console.error("❌ 페이지 목록 로드 실패:", err);
 
@@ -258,6 +259,10 @@ export const useConfluence = (): UseConfluenceReturn => {
     []
   );
 
+  const clearPages = useCallback(() => {
+    setPages([]);
+  }, []);
+
   const clearError = useCallback(() => {
     setError(null);
   }, []);
@@ -273,6 +278,7 @@ export const useConfluence = (): UseConfluenceReturn => {
     uploadToConfluence,
     loadSpaces,
     loadPages,
+    clearPages,
     clearError,
   };
 };

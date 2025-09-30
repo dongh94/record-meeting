@@ -665,6 +665,172 @@ ${transcript.content
   }
 
   /**
+   * 특정 스페이스의 페이지 목록 조회 (계층 구조 포함)
+   */
+  async getPages(
+    spaceKey: string,
+    parentId?: string
+  ): Promise<
+    Array<{
+      id: string;
+      title: string;
+      type: string;
+      parentId?: string;
+      level: number;
+      hasChildren: boolean;
+    }>
+  > {
+    try {
+      console.log(
+        `🔄 페이지 조회 시작: ${spaceKey}`,
+        parentId ? `(부모: ${parentId})` : ""
+      );
+
+      // 모든 페이지를 가져와서 계층 구조 구축
+      const allPages = await this.getAllPagesInSpace(spaceKey);
+
+      // 계층 구조 구축
+      const hierarchicalPages = this.buildPageHierarchy(allPages);
+
+      console.log(
+        `✅ 페이지 조회 성공: ${hierarchicalPages.length}개 (계층 구조 포함)`
+      );
+      return hierarchicalPages;
+    } catch (error) {
+      console.error("❌ 페이지 조회 실패:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * 스페이스의 모든 페이지 가져오기 (페이지네이션 처리)
+   */
+  private async getAllPagesInSpace(spaceKey: string): Promise<any[]> {
+    let allPages: any[] = [];
+    let start = 0;
+    const limit = 100;
+    let hasMore = true;
+
+    while (hasMore) {
+      const params = new URLSearchParams({
+        spaceKey,
+        limit: limit.toString(),
+        start: start.toString(),
+        expand: "ancestors,children.page",
+        type: "page",
+      });
+
+      const response = await fetch(
+        `${this.config.baseUrl}/wiki/rest/api/content?${params}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: this.getAuthHeader(),
+            Accept: "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("❌ 페이지 조회 API 오류:", response.status, errorText);
+        throw new Error(
+          `페이지 조회 실패: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const result = (await response.json()) as any;
+      const pages = result.results || [];
+
+      allPages = [...allPages, ...pages];
+
+      // 더 가져올 페이지가 있는지 확인
+      hasMore = pages.length === limit;
+      start += limit;
+
+      console.log(
+        `📄 페이지 배치 조회: ${pages.length}개 (총 ${allPages.length}개)`
+      );
+    }
+
+    return allPages;
+  }
+
+  /**
+   * 페이지 목록을 계층 구조로 변환
+   */
+  private buildPageHierarchy(pages: any[]): Array<{
+    id: string;
+    title: string;
+    type: string;
+    parentId?: string;
+    level: number;
+    hasChildren: boolean;
+  }> {
+    const pageMap = new Map<string, any>();
+    const childrenMap = new Map<string, string[]>();
+
+    // 페이지 맵 생성 및 부모-자식 관계 파악
+    pages.forEach((page) => {
+      pageMap.set(page.id, page);
+
+      // 부모 페이지 ID 추출 (ancestors 배열의 마지막 항목)
+      const ancestors = page.ancestors || [];
+      const parentId =
+        ancestors.length > 0 ? ancestors[ancestors.length - 1].id : undefined;
+
+      if (parentId) {
+        if (!childrenMap.has(parentId)) {
+          childrenMap.set(parentId, []);
+        }
+        childrenMap.get(parentId)!.push(page.id);
+      }
+    });
+
+    // 결과 생성
+    const result = pages.map((page) => {
+      const ancestors = page.ancestors || [];
+      const parentId =
+        ancestors.length > 0 ? ancestors[ancestors.length - 1].id : undefined;
+      const level = ancestors.length;
+      const hasChildren =
+        childrenMap.has(page.id) && childrenMap.get(page.id)!.length > 0;
+
+      return {
+        id: page.id,
+        title: page.title,
+        type: page.type,
+        parentId,
+        level,
+        hasChildren,
+      };
+    });
+
+    // 제목순으로 정렬
+    result.sort((a, b) => {
+      // 같은 레벨에서는 제목순으로 정렬
+      if (a.level === b.level) {
+        return a.title.localeCompare(b.title);
+      }
+      // 다른 레벨이면 레벨순으로 정렬
+      return a.level - b.level;
+    });
+
+    console.log(`🏗️ 계층 구조 구축 완료: ${result.length}개 페이지`);
+    console.log(
+      `📊 레벨별 분포:`,
+      [0, 1, 2, 3, 4]
+        .map(
+          (level) =>
+            `L${level}:${result.filter((p) => p.level === level).length}`
+        )
+        .join(", ")
+    );
+
+    return result;
+  }
+
+  /**
    * Confluence 연결 상태 확인
    */
   async testConnection(): Promise<boolean> {
